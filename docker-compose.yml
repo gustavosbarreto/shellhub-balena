@@ -1,0 +1,18 @@
+version: '2'
+
+services:
+  shellhub:
+    build:
+      context: shellhub
+      dockerfile: Dockerfile.template
+      args:
+        SHELLHUB_VERSION: v0.4.0
+    restart: always
+    environment:
+      - SHELLHUB_SERVER_ADDRESS=https://cloud.shellhub.io
+      - SHELLHUB_PRIVATE_KEY=/data/shellhub.key
+    volumes:
+      - resin-data:/data
+
+volumes:
+  resin-data:

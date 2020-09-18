@@ -1,0 +1,23 @@
+FROM balenalib/%%BALENA_MACHINE_NAME%%-alpine-golang:build as builder
+
+ARG SHELLHUB_VERSION
+
+RUN apk add --update git ca-certificates util-linux build-base bash setpriv
+
+WORKDIR $GOPATH/src/github.com/shellhub-io
+
+RUN git clone -c advice.detachedHead=false --depth 1 -b $SHELLHUB_VERSION https://github.com/shellhub-io/shellhub.git
+
+WORKDIR $GOPATH/src/github.com/shellhub-io/shellhub/agent
+
+RUN go mod download
+
+RUN go build -ldflags "-X main.AgentVersion=${SHELLHUB_VERSION}"
+
+FROM balenalib/%%BALENA_MACHINE_NAME%%-alpine-golang
+
+RUN echo 'root:balena' | chpasswd
+
+COPY --from=builder /go/src/github.com/shellhub-io/shellhub/agent/agent /bin/agent
+
+ENTRYPOINT ["/bin/agent"]
